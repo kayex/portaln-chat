@@ -1,11 +1,14 @@
 dh = undefined
 ws = undefined
 activeUser = undefined
-
+message = require(message)
 
 init = ->
   dh = new window.DOMHandle()
   dh.initDOMChange()
+
+
+
   activeUser = "User_01"
 
   dh.on "submit", (text) ->

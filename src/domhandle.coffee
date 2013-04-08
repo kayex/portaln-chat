@@ -23,7 +23,11 @@ class window.DOMHandle
       },
 
       chatMainOutput: {
-        "height": "200px",
+        "border": "1px solid",
+        "overflow": "scroll",
+        "word-wrap": "break-word",
+        "height": "375px",
+        "width": "100%",
         "text-align": "left",
         "background-color": "#fff"
       },
@@ -129,6 +133,8 @@ class window.DOMHandle
 
     authorTag.appendTo(@chatMainOutput)
     contentTag.appendTo(@chatMainOutput)
+
+    $(@chatMainOutput).animate({scrollTop: $(@chatMainOutput).prop("scrollHeight")});
 
 unixToTime = (unixtime) ->
   date = new Date(Number(unixtime))

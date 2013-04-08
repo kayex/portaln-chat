@@ -24,7 +24,11 @@
           "background-color": "#fff"
         },
         chatMainOutput: {
-          "height": "200px",
+          "border": "1px solid",
+          "overflow": "scroll",
+          "word-wrap": "break-word",
+          "height": "375px",
+          "width": "100%",
           "text-align": "left",
           "background-color": "#fff"
         },
@@ -134,7 +138,10 @@
       contentTag.css(this.CSS.messageContent);
       contentTag.html(messageObject.content);
       authorTag.appendTo(this.chatMainOutput);
-      return contentTag.appendTo(this.chatMainOutput);
+      contentTag.appendTo(this.chatMainOutput);
+      return $(this.chatMainOutput).animate({
+        scrollTop: $(this.chatMainOutput).prop("scrollHeight")
+      });
     };
 
     return DOMHandle;

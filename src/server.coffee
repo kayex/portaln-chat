@@ -1,20 +1,24 @@
 WebSocketServer = require("ws").Server
 log = require("util").log
+message = require("message")
 
 logMsg = (msg) ->
   log("> #{msg}")
 
-logInfo = (info) ->
+logServerInfo = (info) ->
   log("# #{info}")
+
+logUserInfo = (info) ->
+  log("@ #{info}")
 
 port = 1337
 
 wss = new WebSocketServer {port: port}
 clients = []
-
-logInfo("Initated on port #{port}")
+logServerInfo("Initated on port #{port}")
 
 wss.on "connection", (ws) ->
+  logUserInfo("User connected.")
   clients.push(ws)
 
   ws.on "message", (message) ->

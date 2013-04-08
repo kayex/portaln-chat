@@ -13,9 +13,9 @@
       this.pageNavButton = this.getNavButton();
       this.pageCopyright = this.getCopyright();
       this.callbacks = {
-        "submit": null
+        "submit": void 0
       };
-      this.styles = {
+      this.CSS = {
         chatStatus: {
           "width": "100%",
           "padding": "7px",
@@ -31,29 +31,31 @@
           "font-size": "100%",
           "margin-top": "15px",
           "background-color": "#fff"
+        },
+        messageAuthor: {
+          "width": "100%",
+          "border-color": "#ddd",
+          "border-style": "solid",
+          "padding": "7px 15px 3px 15px",
+          "font-family": "Rockwell, KuristaSemibold, Arial",
+          "font-size": "16px",
+          "background-color": "#fff",
+          "float": "left",
+          "color": "#41b7d8"
+        },
+        messageContent: {
+          "width": "100%",
+          "padding": "3px 15px 8px 15px",
+          "background-color": "#fff",
+          "float": "left",
+          "border-bottom": "1px solid #eee",
+          "line-height": "120%"
         }
       };
-      this.bodyHTML = "<div id=\"chatStatus\"></div>\n<div id=\"chatMainOutput\"></div>\n<input type=\"text\" id=\"chatTextarea\">";
-      this.messageAuthorHTML = "<div class=\"messageAuthor\"></div>";
-      this.messageAuthorCSS = {
-        "width": "100%",
-        "border-color": "#ddd",
-        "border-style": "solid",
-        "padding": "7px 15px 3px 15px",
-        "font-family": "Rockwell, KuristaSemibold, Arial",
-        "font-size": "16px",
-        "background-color": "#fff",
-        "float": "left",
-        "color": "#41b7d8"
-      };
-      this.messageContentHTML = "<div class=\"messageContent\"></div>";
-      this.messageContentCSS = {
-        "width": "100%",
-        "padding": "3px 15px 8px 15px",
-        "background-color": "#fff",
-        "float": "left",
-        "border-bottom": "1px solid #eee",
-        "line-height": "120%"
+      this.HTML = {
+        body: "<div id=\"chatStatus\"></div>\n<div id=\"chatMainOutput\"></div>\n<input type=\"text\" id=\"chatTextarea\">",
+        messageAuthor: "<div class=\"messageAuthor\"></div>",
+        messageContent: "<div class=\"messageContent\"></div>"
       };
     }
 
@@ -64,14 +66,14 @@
       this.pageBody.html("Body");
       this.pageNavButton.html("Chat");
       this.pageCopyright.html("Injected by Epoch2");
-      this.pageBody.html(this.bodyHTML);
+      this.pageBody.html(this.HTML.body);
       this.chatStatus = $("#chatStatus");
       this.chatMainOutput = $("#chatMainOutput");
       this.chatTextarea = $("#chatTextarea");
-      this.chatStatus.css(this.styles.chatStatus);
-      this.chatMainOutput.css(this.styles.chatMainOutput);
-      this.chatTextarea.css(this.styles.chatTextarea);
-      this.chatStatus.html("Status goes here");
+      this.chatStatus.css(this.CSS.chatStatus);
+      this.chatMainOutput.css(this.CSS.chatMainOutput);
+      this.chatTextarea.css(this.CSS.chatTextarea);
+      this.chatStatus.html("Not connected.");
       this.chatTextarea.focus();
       return this.chatTextarea.keypress(function() {
         var callback, evt, _ref;
@@ -108,18 +110,46 @@
       return $("#copyright");
     };
 
+    DOMHandle.prototype.unixToTime = function(unixtime) {
+      var date;
+      date = new Date(Number(unixtime));
+      return {
+        hours: date.getHours(),
+        minutes: date.getMinutes(),
+        seconds: date.getSeconds()
+      };
+    };
+
+    DOMHandle.prototype.addZeroesToTime = function(timeObject) {
+      var addzero, key, time;
+      addzero = function(time) {
+        if (("" + time).length === 1) {
+          return "0" + time;
+        } else {
+          return "" + time;
+        }
+      };
+      for (key in timeObject) {
+        time = timeObject[key];
+        timeObject[key] = addzero(time);
+      }
+      return timeObject;
+    };
+
     DOMHandle.prototype.on = function(event, callback) {
       return this.callbacks[event] = callback;
     };
 
-    DOMHandle.prototype.addMessageToPage = function(author, content) {
-      var authorTag, contentTag;
-      authorTag = $(this.messageAuthorHTML);
-      authorTag.css(this.messageAuthorCSS);
-      authorTag.html(author);
-      contentTag = $(this.messageContentHTML);
-      contentTag.css(this.messageContentCSS);
-      contentTag.html(content);
+    DOMHandle.prototype.addMessageToPage = function(messageObject) {
+      var authorTag, contentTag, timeStamp, timeStampString;
+      authorTag = $(this.HTML.messageAuthor);
+      authorTag.css(this.CSS.messageAuthor);
+      timeStamp = this.addZeroesToTime(this.unixToTime(messageObject.timeStamp));
+      timeStampString = "" + timeStamp.hours + ":" + timeStamp.minutes + ":" + timeStamp.seconds;
+      authorTag.html("" + timeStampString + " - " + messageObject.fromUser);
+      contentTag = $(this.HTML.messageContent);
+      contentTag.css(this.CSS.messageContent);
+      contentTag.html(messageObject.content);
       authorTag.appendTo(this.chatMainOutput);
       return contentTag.appendTo(this.chatMainOutput);
     };

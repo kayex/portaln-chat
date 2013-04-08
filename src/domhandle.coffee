@@ -11,7 +11,7 @@ class window.DOMHandle
     @pageCopyright = @getCopyright()
 
     @callbacks = {
-      "submit": null,
+      "submit": undefined,
     }
 
     @CSS = {
@@ -46,7 +46,7 @@ class window.DOMHandle
         "color": "#41b7d8";
       },
 
-      messageContent {
+      messageContent: {
         "width": "100%";
         "padding": "3px 15px 8px 15px";
         "background-color": "#fff";
@@ -84,7 +84,7 @@ class window.DOMHandle
     @chatMainOutput.css(@CSS.chatMainOutput)
     @chatTextarea.css(@CSS.chatTextarea)
 
-    @chatStatus.html("Status goes here")
+    @chatStatus.html("Not connected.")
 
     @chatTextarea.focus()
 
@@ -110,17 +110,34 @@ class window.DOMHandle
   getCopyright: ->
     $("#copyright")
 
+  unixToTime: (unixtime) ->
+    date = new Date(Number(unixtime))
+    return {
+      hours: date.getHours(),
+      minutes: date.getMinutes(),
+      seconds: date.getSeconds()
+    }
+
+  addZeroesToTime: (timeObject) ->
+    addzero = (time) ->
+      return if "#{time}".length is 1 then "0#{time}" else "#{time}"
+
+    timeObject[key] = addzero(time) for key, time of timeObject
+    return timeObject
+
   on: (event, callback) ->
     @callbacks[event] = callback
 
-  addMessageToPage: (author, content) ->
+  addMessageToPage: (messageObject) ->
     authorTag = $(@HTML.messageAuthor)
     authorTag.css(@CSS.messageAuthor)
-    authorTag.html(author)
+    timeStamp = @addZeroesToTime(@unixToTime(messageObject.timeStamp))
+    timeStampString = "#{timeStamp.hours}:#{timeStamp.minutes}:#{timeStamp.seconds}"
+    authorTag.html("#{timeStampString} - #{messageObject.fromUser}")
 
     contentTag = $(@HTML.messageContent)
     contentTag.css(@CSS.messageContent)
-    contentTag.html(content)
+    contentTag.html(messageObject.content)
 
     authorTag.appendTo(@chatMainOutput)
     contentTag.appendTo(@chatMainOutput)

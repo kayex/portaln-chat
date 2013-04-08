@@ -6,11 +6,6 @@ activeUser = undefined
 init = ->
   dh = new window.DOMHandle()
   dh.initDOMChange()
-  dh.addMessageToPage({
-    timeStamp: "345678",
-    fromUser: "Epoch2",
-    content: "Type something and press enter! :)"
-    })
   activeUser = "User_01"
 
   dh.on "submit", (text) ->
@@ -18,7 +13,7 @@ init = ->
       timeStamp: Date.now(),
       fromUser: activeUser,
       toUser: "global",
-      content: text
+      content: text.content
     }
 
   connect()
@@ -33,6 +28,7 @@ compileMessage = (messageObject) ->
   timeStamp = messageObject.timeStamp
   toUser = messageObject.toUser
   fromUser = messageObject.fromUser
+  # Prevent pre-mature delimiter injection
   content = messageObject.content.replace("|", "")
   compiledMessage = "#{timeStamp}|#{toUser}|#{fromUser}|#{content}"
 
@@ -47,6 +43,7 @@ decompileMessage = (message) ->
 
 connect = ->
   ws = new WebSocket("ws://arch.jvester.se:1337")
+  dh.chatStatus.html("Connecting...")
 
   ws.onopen = ->
     displayInfo "Connection established to #{ws.url}"

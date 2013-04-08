@@ -92,7 +92,7 @@ class window.DOMHandle
 
     @chatTextarea.keypress =>
       if event.keyCode is 13
-        callback(@chatTextarea.val()) for evt, callback of @callbacks when evt is "submit"
+        @emit "submit", {content: @chatTextarea.val()}
         @chatTextarea.val("")
 
   getHeader: ->
@@ -110,20 +110,8 @@ class window.DOMHandle
   getCopyright: ->
     $("#copyright")
 
-  unixToTime: (unixtime) ->
-    date = new Date(Number(unixtime))
-    return {
-      hours: date.getHours(),
-      minutes: date.getMinutes(),
-      seconds: date.getSeconds()
-    }
-
-  addZeroesToTime: (timeObject) ->
-    addzero = (time) ->
-      return if "#{time}".length is 1 then "0#{time}" else "#{time}"
-
-    timeObject[key] = addzero(time) for key, time of timeObject
-    return timeObject
+  emit: (event, arg) ->
+    callback(arg) for evt, callback of @callbacks when evt is event
 
   on: (event, callback) ->
     @callbacks[event] = callback
@@ -131,7 +119,7 @@ class window.DOMHandle
   addMessageToPage: (messageObject) ->
     authorTag = $(@HTML.messageAuthor)
     authorTag.css(@CSS.messageAuthor)
-    timeStamp = @addZeroesToTime(@unixToTime(messageObject.timeStamp))
+    timeStamp = addZeroesToTime(unixToTime(messageObject.timeStamp))
     timeStampString = "#{timeStamp.hours}:#{timeStamp.minutes}:#{timeStamp.seconds}"
     authorTag.html("#{timeStampString} - #{messageObject.fromUser}")
 
@@ -141,3 +129,18 @@ class window.DOMHandle
 
     authorTag.appendTo(@chatMainOutput)
     contentTag.appendTo(@chatMainOutput)
+
+unixToTime = (unixtime) ->
+  date = new Date(Number(unixtime))
+  return {
+    hours: date.getHours(),
+    minutes: date.getMinutes(),
+    seconds: date.getSeconds()
+  }
+
+addZeroesToTime = (timeObject) ->
+  addzero = (time) ->
+    return if "#{time}".length is 1 then "0#{time}" else "#{time}"
+
+  timeObject[key] = addzero(time) for key, time of timeObject
+  return timeObject

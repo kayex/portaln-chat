@@ -11,18 +11,13 @@
   init = function() {
     dh = new window.DOMHandle();
     dh.initDOMChange();
-    dh.addMessageToPage({
-      timeStamp: "345678",
-      fromUser: "Epoch2",
-      content: "Type something and press enter! :)"
-    });
     activeUser = "User_01";
     dh.on("submit", function(text) {
       return sendMessage({
         timeStamp: Date.now(),
         fromUser: activeUser,
         toUser: "global",
-        content: text
+        content: text.content
       });
     });
     return connect();
@@ -58,6 +53,7 @@
 
   connect = function() {
     ws = new WebSocket("ws://arch.jvester.se:1337");
+    dh.chatStatus.html("Connecting...");
     ws.onopen = function() {
       displayInfo("Connection established to " + ws.url);
       return displayInfo("Connection status: " + ws.readyState);

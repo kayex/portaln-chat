@@ -1,20 +1,23 @@
-root = this
+class MessageSerializer
+  @serialize: (messageObject) ->
+    timeStamp = messageObject.timeStamp
+    toUser = messageObject.toUser
+    fromUser = messageObject.fromUser
+    # Prevent pre-mature delimiter injection
+    content = messageObject.content.replace("|", "")
+    serialized = "#{timeStamp}|#{toUser}|#{fromUser}|#{content}"
 
-root.message = root.message or {}
+  @deserialize: (message) ->
+    split = message.split("|")
+    messageObject = {
+      timeStamp: split[0],
+      toUser: split[1],
+      fromUser: split[2],
+      content: split[3]
+    }
 
-compileMessage = (messageObject) ->
-  timeStamp = messageObject.timeStamp
-  toUser = messageObject.toUser
-  fromUser = messageObject.fromUser
-  # Prevent pre-mature delimiter injection
-  content = messageObject.content.replace("|", "")
-  compiledMessage = "#{timeStamp}|#{toUser}|#{fromUser}|#{content}"
-
-decompileMessage = (message) ->
-  split = message.data.split("|")
-  messageObject = {
-    timeStamp: split[0],
-    toUser: split[1],
-    fromUser: split[2],
-    content: split[3]
-  }
+if not window?
+  module.exports = exports
+  exports.MessageSerializer = MessageSerializer
+else
+  window.MessageSerializer = MessageSerializer

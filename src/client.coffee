@@ -1,51 +1,38 @@
 dh = undefined
 ws = undefined
-activeUser = undefined
-message = require(message)
+window.activeUser = "User_0123"
+MessageSerializer = window.MessageSerializer
+
+config = {server: "ws://arch.jvester.se:1337"}
 
 init = ->
   dh = new window.DOMHandle()
   dh.initDOMChange()
 
-
-
-  activeUser = "User_01"
+  dh.chatTextarea.attr("placeholder", "Enter your desired username.")
 
   dh.on "submit", (text) ->
-    sendMessage {
-      timeStamp: Date.now(),
-      fromUser: activeUser,
-      toUser: "global",
-      content: text.content
-    }
+    window.activeUser = text.content
+    dh.chatTextarea.attr("placeholder", "Enter your message here.")
 
-  connect()
+    dh.on "submit", (text) ->
+      sendMessage {
+        timeStamp: Date.now(),
+        fromUser: window.activeUser,
+        toUser: "global",
+        content: text.content
+      }
+
+  connect(config)
 
 sendMessage = (messageObject) ->
-  ws.send(compileMessage(messageObject))
+  ws.send(MessageSerializer.serialize(messageObject))
 
 displayInfo = (info) ->
   dh.chatStatus.html(info)
 
-compileMessage = (messageObject) ->
-  timeStamp = messageObject.timeStamp
-  toUser = messageObject.toUser
-  fromUser = messageObject.fromUser
-  # Prevent pre-mature delimiter injection
-  content = messageObject.content.replace("|", "")
-  compiledMessage = "#{timeStamp}|#{toUser}|#{fromUser}|#{content}"
-
-decompileMessage = (message) ->
-  split = message.data.split("|")
-  messageObject = {
-    timeStamp: split[0],
-    toUser: split[1],
-    fromUser: split[2],
-    content: split[3]
-  }
-
-connect = ->
-  ws = new WebSocket("ws://arch.jvester.se:1337")
+connect = (config) ->
+  ws = new WebSocket(config.server)
   dh.chatStatus.html("Connecting...")
 
   ws.onopen = ->
@@ -53,6 +40,6 @@ connect = ->
     displayInfo "Connection status: #{ws.readyState}"
 
   ws.onmessage = (message) ->
-    dh.addMessageToPage(decompileMessage(message))
+    dh.addMessageToPage(MessageSerializer.deserialize(message.data))
 
 init()

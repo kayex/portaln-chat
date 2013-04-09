@@ -1,6 +1,6 @@
 WebSocketServer = require("ws").Server
 log = require("util").log
-message = require("message")
+MessageSerializer = require("./message.js").MessageSerializer
 
 logMsg = (msg) ->
   log("> #{msg}")
@@ -11,6 +11,13 @@ logServerInfo = (info) ->
 logUserInfo = (info) ->
   log("@ #{info}")
 
+pushMessage = (messageObject) ->
+  client.send(MessageSerializer.serialize(messageObject)) for client in clients
+  logMsg(MessageSerializer.serialize(messageObject))
+
+clearClient = (client) ->
+  clients.splice(i,1) for cli, i in clients when cli is client
+
 port = 1337
 
 wss = new WebSocketServer {port: port}
@@ -18,12 +25,26 @@ clients = []
 logServerInfo("Initated on port #{port}")
 
 wss.on "connection", (ws) ->
+  pushMessage({
+    timeStamp: Date.now(),
+    fromUser: "Server",
+    toUser: "global",
+    content: "@User connected!"
+    })
+
   logUserInfo("User connected.")
   clients.push(ws)
 
   ws.on "message", (message) ->
-    logMsg(message)
-    client.send(message) for client in clients
+    pushMessage(MessageSerializer.deserialize(message))
 
   ws.on "close", (code, message) ->
-    clients.splice(i,1) for client, i in clients when client is ws
+    clearClient(ws)
+    pushMessage({
+      timeStamp: Date.now(),
+      fromUser: "Server",
+      toUser: "global",
+      content: "@User disconnected!"
+      })
+
+    logUserInfo("User disconnected.")

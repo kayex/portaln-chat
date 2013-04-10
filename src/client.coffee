@@ -1,7 +1,9 @@
 dh = undefined
 ws = undefined
+lastMessageTime = 0
+lastMessageContent = ""
 window.activeUser = "User_0123"
-MessageSerializer = window.MessageSerializer
+MS = window.MessageSerializer
 
 config = {server: "ws://arch.jvester.se:1337"}
 
@@ -23,10 +25,13 @@ init = ->
         content: text.content
       }
 
+      lastMessageTime = Date.now()
+      lastMessageContent = text.content
+
   connect(config)
 
 sendMessage = (messageObject) ->
-  ws.send(MessageSerializer.serialize(messageObject))
+  ws.send(MS.serialize(messageObject))
 
 displayInfo = (info) ->
   dh.chatStatus.html(info)
@@ -40,6 +45,7 @@ connect = (config) ->
     displayInfo "Connection status: #{ws.readyState}"
 
   ws.onmessage = (message) ->
-    dh.addMessageToPage(MessageSerializer.deserialize(message.data))
+    console.log("Roundtrip: #{Date.now() - lastMessageTime} ms - '#{MS.deserialize(message.data).content}'") if MS.deserialize(message.data).content is lastMessageContent
+    dh.addMessageToPage(MS.deserialize(message.data))
 
 init()

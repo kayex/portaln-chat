@@ -1,0 +1,110 @@
+---------------------------------
+LOGGING IN
+---------------------------------
+CLIENT connects on WebSocket ws.
+CHATSERVER stores ws.
+
+CLIENT sends:
+
+  authRequest = {
+    type: "auth-request",
+    SESSID: "aoeuaoeu"
+  }
+
+CHATSERVER posts authRequest.SESSID to WEBSERVER
+
+WEBSERVER replies:
+
+  authresponse = {
+    loggedin: true,
+    uID: "293482"
+  }
+
+  OR
+
+  authresponse = {
+    loggedin: false
+  }
+
+IF authresponse.loggedin == false
+  CHATSEVER sends to CLIENT:
+    {
+      type: "auth-response",
+      response: false
+    }
+
+ELSE
+  CHATSERVER sends to CLIENT:
+    {
+      type: "auth-response",
+      response: true
+    }
+
+  CHATSERVER stores this locally:
+    clientObj = {
+      WebSocket: ws,
+      uID: authresponse.uID
+    }
+
+
+
+
+--------------------------------------------------
+SENDING A MESSAGE
+--------------------------------------------------
+
+CLIENT sends:
+
+message_request = {
+  type: "message-send-request",
+  id: "21",
+  message: {
+    timeStamp: "23"
+    touID: "234324",
+    content: "Hej"
+  }
+}
+
+CHATSERVER looks if the CLIENT has a clientObj on the CHATSERVER (which means the client is logged in)
+CHATSERVER looks if there is a clientObj with uID == message_request.message.touID (which means the client the message is going to is logged in)
+
+IF there is a clientObj with uID == message_request.message.touID:
+  toCLIENT = clientObj with uID == message_request.message.touID
+
+IF CLIENT has clientObj on CHATSERVER and toCLIENT exists:
+  CHATSERVER creates:
+    message = {
+      type: "message",
+      message: {
+        timeStamp: message_request.message.timeStamp,
+        fromuID: clientObj.uID,
+        touID: message_request.message.touID,
+        content: message_request.message.content
+      }
+    }
+
+  CHATSERVER sends message to toCLIENT.ws
+  CHATSERVER sends this to CLIENT:
+    {
+      type: "send-request-response",
+      response: {
+        id: message_request.id,
+        value: true
+      }
+    }
+
+  CHATSERVER logs message
+
+ELSE if toCLIENT does not exist:
+  CHATSERVER sends this to CLIENT
+    {
+      type: "send-request-response",
+      response: {
+        id: message_request.id,
+        value: false,
+        reason: "receiving-user-not-connected"
+      }
+    }
+
+ELSE if CLIENT is not logged in:
+  do nothing

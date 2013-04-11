@@ -3,21 +3,26 @@ NETCODES = window.NETCODES
 dh = window.Domhandle
 
 class ChatConnection
-  constructor: (@ws) ->
-    @wsReady = false
+  constructor: (@server, @sessid) ->
+    @ws = undefined
     @authenticated = false
     @msgID = 10
     @uID = ""
     @callbacks = {
       "message": undefined
     }
+
+  connect: ->
+    @ws = new WebSocket(@server)
     @ws.onopen = =>
-      console.log("onopen")
-      @wsReady = true
+      @authenticate()
+    undefined
 
   handleMessage: (msg) ->
-    parsedMsg = MS.deserialize(msg.content)
-    emit("message", parsedMsg)
+    console.log(msg)
+    console.log(msg.data)
+    parsedMsg = MS.deserialize(msg.data)
+    @emit("message", parsedMsg)
 
   emit: (event, arg) ->
     callback(arg) for evt, callback of @callbacks when evt is event
@@ -30,25 +35,14 @@ class ChatConnection
     @msgID++
     @ws.send(MS.serialize(createMsgRequest(msgObj)))
 
-  sendAuthentication: (sessid) ->
-    console.log("send auth")
-    console.log(sessid)
-    if @wsReady
-      console.log("Ws ready")
-      @ws.send {
-        type: NETCODES.AUTH_REQ,
-        SESSID: sessid
-      }
-
-  authenticate: (sessid) ->
-    @ws.onmessage = (msg) ->
-      console.log("Message: #{msg}")
-      authObject = MS.deserialize(msg.content)
+  authenticate: ->
+    @ws.onmessage = (msg) =>
+      console.log("Message: #{msg.data}")
+      authObject = MS.deserialize(msg.data)
 
       if authObject?.type is not NETCODES.AUTH_RES or not authObject?.response?.value or not authObject?.response?.uID
         logConnectionInfo("AUTH_RES INVALID")
         @authenticated = false
-        return
 
       if authObject.response.value is true
         @uID = authObject.response.uID
@@ -57,9 +51,12 @@ class ChatConnection
 
         @ws.onmessage = @handleMessage
 
-    @sendAuthentication(sessid) until @authenticated
-    console.log("Auth")
-    return true
+    @ws.send MS.serialize({
+      type: NETCODES.AUTH_REQ,
+      SESSID: @sessid
+    })
+
+    console.log(MS.serialize({type: NETCODES.AUTH_REQ, SESSID: @sessid}))
 
 logConnectionInfo = (info) ->
   console.log(info)
@@ -74,13 +71,11 @@ createMsgRequest = (msgObj) ->
 
 chatServer = "ws://127.0.0.1:1337"
 
-ws = new WebSocket(chatServer)
 SESSID = window.getCookie("PORTALNSESSID")
 
-cc = new ChatConnection(ws)
-# cc.authenticate(SESSID)
+cc = new ChatConnection(chatServer, SESSID)
+cc.connect()
 cc.on "message", (msgObject) ->
-  # dh.addMessageToPage(msgObject)
   console.log(msgObject)
 
 window.cc = cc

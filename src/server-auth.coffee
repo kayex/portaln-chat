@@ -4,10 +4,7 @@ request = require("request")
 NETCODES = require("./netcodes.js").NETCODES
 MS = require("./message.js").MessageSerializer
 
-postData = {
-  passwd: "94bfd1921fe7663e776528e678e56f33",
-  SESSID: undefined
-}
+postPasswd = "94bfd1921fe7663e776528e678e56f33"
 
 class ClientHolder
   constructor: ->
@@ -17,13 +14,15 @@ class ClientHolder
     @clients.push(client)
 
   delClientByWS: (ws) ->
-    @clients.splice(i,1) for client, i in @clients when client.ws is ws
+    @clients.splice(i,1) for client, i in @clients when client?.ws is ws
 
   getClientByuID: (uID) ->
-    return client for client in @clients when client.uID is uID
+    return client for client in @clients when client?.uID is uID
+    return null
 
   getClientByWS: (ws) ->
-    return client for client in @clients when client.ws is ws
+    return client for client in @clients when client?.ws is ws
+    return null
 
   getClientCount: ->
     return @clients.length
@@ -32,17 +31,27 @@ createClient = (ws, uID) ->
   return {ws: ws, uID: uID}
 
 checkSession = (sessID) ->
-  checkResponse = ""
-  request.post "http://latest.portaln.se/skola/chatapi.php/", {form: post}, (error, response, body) ->
+  a = 0
+  checkObject = undefined
+
+  # checkObject = {
+  #   loggedin: true,
+  #   uID: "12345"
+  # }
+
+  request.post "http://latest.portaln.se/skola/chatapi.php", {form: {passwd: postPasswd, SESSID: sessID}}, (error, response, body) ->
+    console.log("Error #{error}")
+    console.log("Response #{response}")
     console.log("Body: #{body}")
-    checkResponse = body if response.statusCode is 200 and not error
+    checkObject = JSON.parse(body) if response.statusCode is 200 and not error
 
-  checkObject = JSON.parse(checkResponse)
-
+  a = 0 until checkObject?
   return checkObject
 
 authenticateConnection = (ws, authReq) ->
+  console.log("Authenticating connection")
   authObject = JSON.parse(authReq)
+  console.log(authObject)
 
   # Invalid AUTH_REQ
   if authObject?.type is not NETCODES.AUTH_REQ or not authObject?.SESSID
@@ -56,11 +65,11 @@ authenticateConnection = (ws, authReq) ->
     ws.close(4025, "AUTH_REQ INVALID")
     return false
 
-  checkResponse = JSON.parse(checkSession(authObject.SESSID))
+  checkResponse = checkSession(authObject.SESSID)
 
   # Response from portaln indicates user is not logged in
   if checkResponse?.loggedin is not true
-    ws.send {
+    ws.send MS.serialize {
       type: NETCODES.AUTH_RES,
       response: {
         value: false,
@@ -72,7 +81,7 @@ authenticateConnection = (ws, authReq) ->
 
   # Response from portaln carries no uID
   if not checkResponse?.uID
-    ws.send {
+    ws.send MS.serialize {
       type: NETCODES.AUTH_RES,
       response: {
         value: false,
@@ -83,7 +92,7 @@ authenticateConnection = (ws, authReq) ->
     return false
 
   if checkResponse.loggedin is true
-    ws.send {
+    ws.send MS.serialize {
       type: NETCODES.AUTH_RES,
       response: {
         value: true,
@@ -100,7 +109,7 @@ handleRequest = (ws, req) ->
   parsedReq = MS.deserialize(req)
 
   switch parsedReq.type
-    when NETCODES.MSG_SEND_REQ then handleMessageRequest(ws, parsedReq.msg)
+    when NETCODES.MSG_SEND_REQ then handleMessageRequest(ws, parsedReq.message)
 
 createMessageForWire = (msgObj) ->
   message = {
@@ -123,12 +132,15 @@ logMessage = (msgObj) ->
   log("> #{msgObj.fromuID} -> #{msgObj.touID}: #{msgObj.content}")
 
 logMessageToDisk = (msgObj) ->
+  console.log("Message to disk")
   # Log message here
 
 handleMessageRequest = (ws, msgObj) ->
-  clientFrom = getClientByWS(ws)
+  console.log("Handling message request")
+  clientFrom = ch.getClientByWS(ws)
 
   if not clientFrom?
+    console("this client is not registered")
     ws.send MS.serialize({
       type: NETCODES.MSG_SEND_RES,
       response: {
@@ -138,9 +150,22 @@ handleMessageRequest = (ws, msgObj) ->
       }
       })
 
-  clientTo = getClientByuID(msgObj.touID)
+  console.log("fromClient is logged in!")
 
-  transmitMessage(clientTo, msgObj) if clientTo?
+  clientTo = ch.getClientByuID(msgObj.touID)
+
+  transmitMessage(clientTo.ws, msgObj) if clientTo?
+
+  console.log("Sending response")
+
+  ws.send MS.serialize({
+    type: NETCODES.MSG_SEND_RES,
+    response: {
+      id: msgObj.id,
+      value: true
+    }
+    })
+
   logMessage(msgObj)
   logMessageToDisk(msgObj)
 
@@ -160,5 +185,6 @@ wss.on "connection", (ws) ->
       handleRequest(ws, msg)
 
   ws.on "close", (code, reason) ->
-    logUserInfo("#{ch.getClientByWS(ws).uID} disconnected.")
-    ch.delClientByWS(ws)
+    if ch.getClientByWS(ws)
+      logUserInfo("#{ch.getClientByWS(ws).uID} disconnected.")
+      ch.delClientByWS(ws)

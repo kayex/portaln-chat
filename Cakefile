@@ -8,3 +8,6 @@ launch = (cmd, options=[]) ->
 
 task 'build', 'Build src/ to build/.', ->
   launch "coffee", ["-c", "-o", "build/", "src/"]
+
+task 'push', 'Push build/ to Dropbox/portaln-chat-js/.', ->
+  launch "/Users/jv/Development/push", []

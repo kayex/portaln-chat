@@ -1,0 +1,3 @@
+#!/bin/bash
+
+cp /Users/jv/Development/portaln-chat/build/*.js /Users/jv/Dropbox/portaln-chat-js/

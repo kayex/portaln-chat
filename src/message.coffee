@@ -1,20 +1,9 @@
 class MessageSerializer
   @serialize: (messageObject) ->
-    timeStamp = messageObject.timeStamp
-    toUser = messageObject.toUser
-    fromUser = messageObject.fromUser
-    # Prevent pre-mature delimiter injection
-    content = messageObject.content.replace("|", "")
-    serialized = "#{timeStamp}|#{toUser}|#{fromUser}|#{content}"
+    return JSON.stringify(messageObject)
 
   @deserialize: (message) ->
-    split = message.split("|")
-    messageObject = {
-      timeStamp: split[0],
-      toUser: split[1],
-      fromUser: split[2],
-      content: split[3]
-    }
+    return JSON.parse(message)
 
 if not window?
   module.exports = exports

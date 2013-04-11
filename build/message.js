@@ -7,23 +7,11 @@
     function MessageSerializer() {}
 
     MessageSerializer.serialize = function(messageObject) {
-      var content, fromUser, serialized, timeStamp, toUser;
-      timeStamp = messageObject.timeStamp;
-      toUser = messageObject.toUser;
-      fromUser = messageObject.fromUser;
-      content = messageObject.content.replace("|", "");
-      return serialized = "" + timeStamp + "|" + toUser + "|" + fromUser + "|" + content;
+      return JSON.stringify(messageObject);
     };
 
     MessageSerializer.deserialize = function(message) {
-      var messageObject, split;
-      split = message.split("|");
-      return messageObject = {
-        timeStamp: split[0],
-        toUser: split[1],
-        fromUser: split[2],
-        content: split[3]
-      };
+      return JSON.parse(message);
     };
 
     return MessageSerializer;

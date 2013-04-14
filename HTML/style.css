@@ -1,0 +1,813 @@
+@font-face {
+    font-family: KulturistaSemibold;
+    src: url("/skola/fonts/Kulturista Semibold.otf");
+}
+
+body, html {
+    background-color: #ebebeb;
+    /*font-family: Arial, sans-serif;
+    font-size: 14px;
+    color: #222;*/
+    font-family: Verdana, Geneva, Arial, sans-serif;
+    font-size: 14px;
+    color: #444;
+    min-width: 450px;
+}
+
+* {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.clear { clear: both; }
+
+#wrapper {
+    width: 900px;
+    margin: 0px auto;
+    overflow: hidden;
+}
+
+@media (max-width: 900px){
+    #wrapper {
+        width: 100%;
+    }
+    #bar {
+        border-radius: 0px;
+        border-width: 1px 0px;
+    }
+}
+
+/* ----------------
+ *     GENERAL
+ * ---------------*/
+
+.video {
+    background-color: #eee;
+    background-image: url("/skola/img/design/loader.gif");
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+
+a {
+    color: #333;
+    text-shadow: 0px 1px #fff;
+    text-decoration: none;
+}
+
+.blurred {
+    color: #aaa !important;
+}
+
+/* ----------------
+ *    Interface
+ * ---------------*/
+
+.button {
+    background-color: #0064ca;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #004f9e;
+    text-align: center;
+    font-family: KulturistaSemibold, Arial;
+    font-size: 15px;
+    color: #fff;
+    box-shadow: inset 0 0 1px #bfdfff;
+    text-shadow: 0px 1px #004f9e;
+}
+
+.btnShadow {
+    background-color: #004f9e;
+    border-radius: 5px;
+    padding-bottom: 3px;
+    margin-bottom: 5px;
+    transition: all 0.1s;
+    -moz-transition: all 0.1s;
+    -webkit-transition: all 0.1s;
+    -o-transition: all 0.1s;
+}
+
+.btnShadow:active {
+    padding-bottom: 0px;
+    margin-top: 3px;
+}
+
+input[type="text"], input[type="password"], textarea, select {
+    width: 100%;
+    padding: 8px 13px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    color: #555;
+}
+
+textarea {
+    resize: vertical;
+}
+
+select {
+    height: 36px;
+}
+
+/* ----------------
+ *      TOP
+ * ---------------*/
+
+/* Location */
+#top .location {
+    float: left;
+    margin: 0px 15px 10px 0px;
+    font-size: 0px;
+}
+
+
+#top .location a {
+    font-size: 13px !important;
+    color: #777;
+    padding: 5px 6px 4px 15px;
+    border-radius: 0px;
+    border-color: #ccc;
+    border-style: solid;
+    border-width: 0px 0px 1px 0px;
+    background-color: #f8f8f8;
+    box-shadow: inset 0 0 2px #fff;
+    display: inline-block;
+    background-image: url("/skola/img/design/location_separator.png");
+    background-repeat: no-repeat;
+    background-position: left center;
+}
+
+#top .location a:hover {
+    color: #000;
+}
+
+#top .location a:first-child {
+    border-radius: 0px 0px 0px 5px;
+    border-width: 0px 0px 1px 1px;
+    background-image: none;
+}
+
+#top .location a:last-child {
+    border-radius: 0px 0px 5px 0px;
+    border-width: 0px 1px 1px 0px;
+    padding-right: 15px;
+}
+
+/* Top Menu */
+#top #topMenu {
+    float: right;
+    font-size: 0px;
+}
+
+#top #topMenu a {
+    width: 31px;
+    height: 23px;
+    margin-left: 5px;
+    border-radius: 0px 0px 5px 5px;
+    border-color: #ccc;
+    border-style: solid;
+    border-width: 0px 1px 1px 1px;
+    background-color: #f8f8f8;
+    box-shadow: inset 0 0 2px #fff;
+    display: inline-block;
+    background-repeat: no-repeat;
+    background-position: center center;
+    transition: all 0.2s;
+    -moz-transition: all 0.2s;
+    -webkit-transition: all 0.2s;
+    -o-transition: all 0.2s;
+}
+
+#top #topMenu a:hover {
+    height: 28px;
+    margin-bottom: -5px;
+}
+
+#top #topMenu .profile {
+    background-image: url("/skola/img/design/icon_profile.png");
+}
+
+#top #topMenu .messages {
+    background-image: url("/skola/img/design/icon_messages.png");
+}
+
+#top #topMenu .logOut {
+    background-image: url("/skola/img/design/icon_logOut.png");
+}
+
+#top #topMenu .messages .num_of_msg {
+    text-shadow: none;
+    position: absolute;
+    margin: 10px 14px;
+    background: #0064ca;
+    border: 1px solid #004f9e;
+    box-shadow: inset 0 0 1px #bfdfff;
+    border-radius: 5px;
+    color: #fff;
+    font-size: 11px;
+    text-align: center;
+    font-family: "Lucida Sans Unicode", "Lucida Grande", "Tahoma", sans-serif;
+    padding: 3px 5px;
+    transition: margin-top 0.2s;
+    -moz-transition: margin-top 0.2s;
+    -webkit-transition: margin-top 0.2s;
+    -o-transition: margin-top 0.2s;
+}
+
+#top #topMenu .messages:hover .num_of_msg {
+    margin-top: 13px;
+}
+
+/* ----------------
+ *      BAR
+ * ---------------*/
+
+#bar {
+    display: table;
+    width: 100%;
+    border-radius: 5px;
+    border: 1px solid #004f9e;
+    background-color: #0064ca;
+    box-shadow: inset 0 0 1px #bfdfff;
+    font-family: Arial, sans-serif;
+}
+
+@media (max-width: 900px){
+    #bar {
+        border-radius: 0px;
+        border-width: 1px 0px;
+    }
+}
+
+/* Main Menu */
+#bar #mainMenu {
+    display: table-cell;
+}
+
+#bar #mainMenu ul {
+    display: inline-block;
+    font-size: 0px;
+    border-right: 1px solid #004f9e;
+    text-align: left;
+}
+
+#bar #mainMenu ul li
+{
+    display: inline-block;
+    border-right: 1px solid #1677d9;
+    border-left: 1px solid #004f9e;
+}
+
+#bar #mainMenu ul li:first-child {
+    border-left: none;
+}
+
+#bar #mainMenu ul li a
+{
+    display: inline-block;
+    font-weight: bold;
+    font-size: 15px;
+    padding: 18px 8px;
+    color: #fff;
+    text-shadow: 0px 1px #004f9e;
+}
+
+#bar #mainMenu ul li:first-of-type a{
+    padding-left: 15px;
+}
+
+#bar #mainMenu li:hover a, #bar #mainMenu li:active a
+{
+    box-shadow: inset 0px 0px 10px #004f9e;
+    border-radius: 3px;
+}
+
+/* Drop Down */
+#bar #mainMenu ul li ul
+{
+    display: none;
+    position: absolute;
+    border: none;
+    width: 198px;
+    box-shadow: 0px 1px 2px #ccc;
+    padding-top: 1px;
+    z-index: 1;
+}
+
+/*#bar #mainMenu ul li:hover ul
+{
+    display: block;
+}*/
+
+#bar #mainMenu ul li ul li
+{
+    padding: 6px 10px;
+    font-size: 15px;
+    font-weight: normal;
+    border: 0px !important;
+}
+
+#bar #mainMenu ul li ul a
+{
+    color: #333;
+    text-shadow: 0px 1px #fff;
+    margin: 0px;
+    padding: 0px;
+    box-shadow: none !important;
+    width: 198px;
+    background: gray;
+    border-radius: 0px !important;
+    background-color: #fff;
+    border: 1px solid #fff;
+    border-bottom: 1px solid #ededed;
+}
+
+#bar #mainMenu ul li ul a:hover {
+    text-shadow: 0px 1px #004f9e;
+    color: #fff;
+    border: 1px solid #004f9e;
+    background-color: #0065c9;
+    box-shadow: inset 0 0 1px #bfdfff !important;
+}
+
+/* Spotlight */
+#bar #spotlight {
+    display: table-cell;
+    padding-right: 15px;
+}
+
+@media (max-width: 700px){
+    #bar{
+        text-align: center;
+    }
+    #bar #mainMenu ul{
+        border-left: 1px solid #1677d9;
+    }
+    #bar #mainMenu ul li:first-of-type a{
+        padding-left: 8px;
+    }
+    #bar #mainMenu ul li:first-child a {
+        border-left: 1px solid #004f9e;
+    }
+    #bar #spotlight {
+        display: none;
+    }
+}
+
+#bar #spotlight .border{
+    background-color: #0064ca;
+    padding: 2px;
+    border-radius: 5px;
+    border: 1px solid #004f9e;
+    box-shadow: inset 0 0 1px #63aef9;
+}
+
+#bar #spotlight #searchBox {
+    height: 28px;
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #0066cc;
+    border-radius: 5px;
+    font-size: 12px;
+}
+
+#bar #spotlight ul {
+    display: none;
+    position: absolute;
+    z-index: 0;
+    box-shadow: 0px 1px 2px #ccc;
+    background-color: #fafafa;
+    margin: 0px 0px 0px 4px;
+    margin-top: 0px;
+    padding-top: 0px;
+}
+
+#bar #spotlight ul .body {
+    border-bottom: 1px solid #fff;
+    border-top: 1px solid #eee;
+    padding: 6px 15px;
+    color: #444;
+}
+
+#bar #spotlight ul .body:hover {
+    background-color: #fff;
+}
+
+#bar #spotlight ul .title {
+    text-shadow: 0px 1px #fff;
+    color: #222;
+    border-width: 1px 0px;
+    border-style: solid;
+    border-color: #ccc;
+    background-color: #e5e5e5;
+    box-shadow: inset 0 0 2px #fff !important;
+    padding: 4px 15px;
+}
+
+/* ----------------
+ *      MAIN
+ * ---------------*/
+
+#main {
+    margin: -7px;
+    padding: 14px 0px;
+}
+
+.col {
+    float: left;
+}
+
+@media (max-width: 700px) {
+    #main {
+        padding: 7px 0px;
+    }
+    .col {
+        float: none;
+        width: 100% !important;
+        padding: 0px !important;
+    }
+}
+
+.col2-5 {
+    width: 40%;
+}
+
+.col3-5 {
+    width: 60%;
+}
+
+.col1-3 {
+    width: 33.333%;
+}
+
+.col2-3 {
+    width: 66.666%;
+}
+
+.col1-1 {
+    width: 100%;
+}
+
+.box {
+    border: 1px solid #dcdcdc;
+    border-radius: 5px 5px 0px 0px;
+    float: left;
+    width: 100%;
+    background-color: #fff;
+    padding: 1px 0px;
+    position: relative;
+}
+
+.box-padding {
+    float: left;
+    width: 100%;
+    padding: 7px;
+}
+
+.box-padding .minheight {
+    min-height: 291px;
+    background-position: bottom;
+    background-repeat: repeat-x;
+}
+
+@media (max-width: 700px){
+    .box .body {
+        border-bottom: 1px solid #eee !important;
+    }
+    .box .body:last-child {
+        border-bottom: none !important;
+    }
+    .box {
+        border-bottom: 1px solid #ddd;
+    }
+    .box, .box .header{
+        border-radius: 0px !important;
+    }
+    .box-padding {
+        padding: 0px 7px;
+    }
+    .box-padding .minheight {
+        min-height: 0px;
+    }
+}
+
+.box .idag {
+    width: 100px;
+    height: 60px;
+    background-image: url("/skola/img/design/idag.png");
+    position: absolute;
+    top: -6px;
+    left: -6px;
+}
+
+.box .header {
+    width: 100%;
+    background-color: #f8f8f8;
+    border-radius: 5px 5px 0px 0px;
+    text-align: center;
+    text-shadow: 0px 1px 0px #fff;
+    padding: 8px 15px;
+    font-family: Arial;
+    border-bottom: 2px solid #ccc;
+    float: left;
+    font-weight: bold;
+    color: #777;
+    height: 32px;
+}
+
+/* Title */
+
+.box .title {
+    width: 100%;
+    border-color: #ddd;
+    border-style: solid;
+    padding: 7px 15px 3px 15px;
+    font-family: Rockwell, KuristaSemibold, Arial;
+    font-size: 16px;
+    background-color: #fff;
+    float: left;
+    color: #41b7d8;
+}
+
+.box .title a {
+    color: #41b7d8;
+    float: left;
+    padding-top: 2px;
+}
+
+.box .title a:hover {
+    text-decoration: underline;
+}
+
+.box .info {
+    float: right;
+    color: #ff5b4d;
+    padding-top: 1px;
+    font-size: 16px;
+    position: relative;
+}
+
+.box .info .power {
+    display: inline-block;
+    font-size: 10px;
+    position: absolute;
+    top: 3px;
+}
+
+.box .info .time {
+    background-image: url("/skola/img/design/icon_time.png");
+    width: 88px;
+}
+
+.box .info .room {
+    background-image: url("/skola/img/design/icon_room.png");
+    width: 55px;
+}
+
+.box .info .date {
+    background-image: url("/skola/img/design/icon_calendar.png");
+    width: 93px;
+}
+
+.box .info .time, .box .info .room, .box .info .date {
+    background-repeat: no-repeat;
+    background-position: center left;
+    padding-left: 16px;
+    padding-top: 1px;
+    display: inline-block;
+}
+
+/* Body */
+
+.box .body {
+    width: 100%;
+    padding: 3px 15px 8px 15px;
+    background-color: #fff;
+    float: left;
+    border-bottom: 1px solid #eee;
+    line-height: 120%;
+}
+.box .body:last-child {
+    border-bottom: none;
+}
+
+.box .body a {
+    color: #ff5b4d;
+}
+
+.box .body .a:hover {
+    text-decoration: underline;
+}
+
+.box .body .info {
+    width: 100%;
+    padding: 5px 0px;
+}
+
+.box .body .info .time {
+    float: left;
+    margin: 0px;
+}
+
+.box .body .info .room {
+    float: right;
+}
+
+
+
+/* Newsfeed */
+
+.newsfeed img {
+    width: 45%;
+    float: right;
+    border-radius: 5px;
+    margin: 5px 0px;
+}
+
+.newsfeed .body {
+    border: none;
+}
+
+.newsfeed .footer {
+    width: 100%;
+    float: left;
+    color: #777;
+    font-size: 14px;
+    padding: 0px 15px 10px 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.newsfeed .date {
+    float: right;
+}
+
+.newsfeed .author {
+    float: left;
+}
+
+@media (max-width: 700px){
+    .newsfeed img {
+        display: none;
+    }
+}
+
+/* Calendar */
+
+.calendar {
+    background-image: url("/skola/img/design/calendar_bottom.png");
+    background-repeat: no-repeat;
+    background-position: bottom left;
+    background-size: 100% auto;
+    padding: 0px 0px 1px 0px !important;
+}
+
+.calendar .header {
+    background-color: #0064ca;
+    border-color: #004f9e;
+    color: #fff;
+    text-shadow: 0px 1px 0px #004f9e;
+    box-shadow: 0px 2px 0px #ebebeb;
+    height: 33px;
+}
+
+.calendar .header .clips {
+    width: 100%;
+}
+
+.calendar .header .clip {
+    width: 19px;
+    height: 43px;
+    margin-top: 3px;
+    background-image: url("/skola/img/design/calendar_clip.png");
+    background-repeat: no-repeat;
+}
+
+.calendar #week, .calendar #date_period {
+    color: #333;
+    text-align: center;
+    font-weight: bold;
+    float: left;
+    width: 100%;
+}
+
+.calendar #week {
+    font-size: 82px;
+    padding-top: 40px;
+}
+
+.calendar .arrow {
+    height: 90px;
+    opacity: 0.2;
+    background-repeat: no-repeat;
+}
+
+.calendar .arrow:hover, .calendar .arrow:active {
+    opacity: 1.0;
+}
+
+.calendar .left {
+    float: left;
+    width: 15%;
+    background-image: url("/skola/img/design/calendar_left_arrow.png");
+    background-position: right center;
+}
+.calendar .right {
+    float: left;
+    width: 15%;
+    background-image: url("/skola/img/design/calendar_right_arrow.png");
+    background-position: left center;
+}
+
+.calendar .middle {
+    float: left;
+    width: 70%;
+}
+
+.calendar #date_period {
+    font-size: 30px;
+    padding-top: 20px;
+}
+
+@media (max-width: 900px){
+    .calendar #week {
+        font-size: 72px;
+        padding-top: 50px;
+    }
+    .calendar #date_period {
+        font-size: 25px;
+    }
+    .calendar .arrow {
+        height: 80px;
+    }
+}
+
+
+@media (max-width: 700px){
+    .calendar {
+        background-image: none;
+    }
+    .calendar .header {
+        background-color: #f8f8f8;
+        border-color: #ccc;
+        color: #777;
+        text-shadow: 0px 1px 0px #fff;
+        box-shadow: none;
+    }
+    .calendar .header .clips {
+        display: none;
+    }
+    .calendar #week {
+        font-size: 40px;
+        padding: 8px 0px;
+        border-bottom: 1px solid #eee;
+    }
+    .calendar #date_period {
+        font-size: 20px;
+        padding: 10px 0px;
+    }
+    .calendar .arrow {
+        width: 35%;
+        height: 40px;
+    }
+    .calendar .middle {
+        width: 30%;
+    }
+}
+
+/* ----------------
+ *      BOTTOM
+ * ---------------*/
+
+#bottom {
+    padding: 10px 0px;
+    text-align: center;
+}
+
+#bottom footer {
+    font-size: 0px;
+}
+
+#bottom footer a {
+    font-size: 14px;
+    padding: 0px 8px 0px 8px;
+    border-left: 1px solid #fff;
+    border-right: 1px solid #ccc;
+    display: inline-block;
+}
+
+#bottom footer a:hover {
+    color: #000;
+}
+
+#bottom footer a:first-child {
+    border-left: none;
+}
+
+#bottom footer a:last-child {
+    border-right: none;
+}
+
+#bottom #copyright {
+    color: #999;
+    padding-top: 10px;
+}

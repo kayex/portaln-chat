@@ -1,15 +1,127 @@
 WebSocketServer = require("ws").Server
 fs = require("fs")
+https = require("https")
 request = require("request")
-NETCODES = require("./netcodes.js").NETCODES
-MS = require("./message.js").MessageSerializer
+MS = require("./message.js").Message
 
-class ClientHolder
-  constructor: ->
+class ChatClientConnection
+  constructor: (@ws, @callback) ->
+    @uID = undefined
+    @authenticated = false
+    @callbacks = {
+      "message": undefined,
+      "close": undefined
+    }
+
+    @ws.on "message", (message) =>
+      @emit("message", message)
+
+    @ws.on "close", (code, reason) =>
+      @emit("close")
+
+  emit: (event, arg) ->
+    callback(arg) for evt, callback of @callbacks when evt is event and typeof callback is "function"
+
+  on: (event, callback) ->
+    do(=>
+      @callbacks[event] = callback
+    ) if typeof event is "string" and typeof callback is "function"
+
+  transmit: (msgObject) ->
+    try
+      @ws.send(MS.serialize(msgObject))
+      return null
+    catch error
+      return error
+
+class ChatServer
+  constructor: (@config) ->
+    config = {
+      key: fs.readFileSync("keys/key.pem"),
+      cert: fs.readFileSync("keys/cert.pem")
+    }
+    server = https.createServer(config)
+    server.listen(1337)
+
+    @wss = new WebSocketServer({server: server})
     @clients = []
 
+    @callbacks = {
+      "client connect": undefined,
+      "client disconnect": undefined,
+      "message": undefined,
+    }
+
+    @wss.on "connection", (ws) =>
+      client = new ChatClientConnection(ws)
+      client.on "message", (message) =>
+        @handleClientRequest(client, MS.deserialize(message))
+
+      client.on "close", =>
+        id = "unauthorized"
+        registeredClient = @getClientByWS(client.ws)
+
+        if registeredClient?
+          id = registeredClient.uID
+          @delClientByWS(client.ws)
+        @emit("client disconnect", id)
+
+  emit: (event, arg) ->
+    callback(arg) for evt, callback of @callbacks when evt is event and typeof callback is "function"
+
+  on: (event, callback) ->
+    do(=>
+      @callbacks[event] = callback
+    ) if typeof event is "string" and typeof callback is "function"
+
+  handleClientRequest: (client, request) =>
+    switch MS.typeOf(request)
+      when MS.CODES.AUTH_REQ
+        @checkSession(client, request.SESSID, @authenticateUser)
+      when MS.CODES.MSG_SEND_REQ
+        @handleClientMessageRequest(client, request.message)
+
+  handleClientMessageRequest: (client, message) ->
+    clientFrom = @getClientByWS(client.ws)
+
+    unless clientFrom?
+      client.transmit MS.createMsgSendRes(false, {id: message?.id, reason:"NOT CONNECTED"})
+      return false
+
+    # Prevent uID spoofing
+    message.fromuID = clientFrom.uID
+
+    clientTo = @getClientByuID(message.touID)
+    clientTo.transmit MS.createMsg(message) if clientTo?
+    clientFrom.transmit (MS.createMsgSendRes(true, {id: message?.id}))
+
+    @emit("message", message)
+
+  authenticateUser: (client, authObject, done) =>
+    # Response from portaln.se is invalid
+    unless MS.assert(authObject, MS.CODES.AUTH_EXTERNAL_RES)
+      client.transmit MS.createAuthRes(false, {reason: "AUTHENTICATION FAILED"})
+      return false
+
+    if authObject.loggedin
+      client.transmit MS.createAuthRes(true, {uID: authObject.uID})
+      client.authorized = true
+      client.uID = authObject.uID
+      @addClient(client)
+      @emit("client connect", client.uID)
+      return true
+
+    else
+      client.transmit MS.createAuthRes(false, {reason: "INVALID SESSID"})
+      return false
+
+  checkSession: (client, sessid, callback) =>
+    request.post "http://latest.portaln.se/skola/chatapi/authSESSID.php", {form: {passwd: @config.authKey, SESSID: sessid}}, (error, response, body) =>
+      checkObject = JSON.parse(body) if response.statusCode is 200 and not error
+      callback(client, checkObject)
+
   addClient: (client) ->
-    @clients.push(client) if client.ws? and client.uID? and client.authorized? is true
+    @clients.push(client) if client.ws? and client.uID? and client.authorized
 
   delClientByWS: (ws) ->
     @clients.splice(i,1) for client, i in @clients when client?.ws is ws
@@ -24,133 +136,6 @@ class ClientHolder
 
   getClientCount: ->
     return @clients.length
-
- class ChatClient
-    constructor: (@ws, @clientHolder) ->
-      @uID = undefined
-      @authenticated = false
-
-      @ws.on "message", @handleRequest
-
-    authenticateConnection: (authObject) ->
-      if validateAuthReq(authObject)
-        @checkSession(authObject.SESSID)
-      else
-        @transmit {
-          type: NETCODES.AUTH_RES,
-          response: {
-            value: false,
-            reason: "AUTH_REQ INVALID"
-          }
-        }
-        return false
-
-    authenticateUser: (authObject) ->
-      # Response from portaln indicates user is not logged in
-      if authObject?.loggedin is not true
-        @transmit {
-          type: NETCODES.AUTH_RES,
-          response: {
-            value: false,
-            reason: "SESSION INVALID"
-          }
-        }
-        return false
-
-      # Response from portaln carries no uID
-      if not authObject?.uID
-        @transmit {
-          type: NETCODES.AUTH_RES,
-          response: {
-            value: false,
-            reason: "NO LEGAL UID"
-          }
-        }
-        ws.close(4027, "NO LEGAL UID")
-        return false
-
-      # Authorized client
-      if authObject.loggedin is true
-        @authorized = true
-        @uID = authObject.uID
-
-        @clientHolder.addClient(this)
-
-        @transmit {
-          type: NETCODES.AUTH_RES,
-          response: {
-            value: true,
-            uID: authObject.uID
-          }
-        }
-
-        logUserInfo("#{authObject.uID} connected.")
-        return true
-      return false
-
-    checkSession: (sessid) ->
-      checkObject = undefined
-
-      request.post "http://latest.portaln.se/skola/chatapi.php", {form: {passwd: postPasswd, SESSID: sessid}}, (error, response, body) =>
-        checkObject = JSON.parse(body) if response.statusCode is 200 and not error
-        @authenticateUser(checkObject)
-
-    handleRequest: (reqObject) =>
-      parsedReq = MS.deserialize(reqObject)
-
-      switch parsedReq.type
-        when NETCODES.AUTH_REQ then @authenticateConnection(parsedReq)
-        when NETCODES.MSG_SEND_REQ then handleMessageRequest(this, parsedReq.message)
-
-      undefined
-
-    transmit: (msgObject) ->
-      try
-        @ws.send(MS.serialize(msgObject))
-        return null
-      catch error
-        return error
-
-    transmitMessage: (msgObject) ->
-      error = @transmit {
-        type: NETCODES.MSG,
-        message: msgObject
-      }
-
-      return error if error?
-
-validateAuthReq = (authObject) ->
-  return authObject?.type is NETCODES.AUTH_REQ and authObject?.SESSID
-
-handleMessageRequest = (client, msgObject) ->
-  clientFrom = ch.getClientByWS(client.ws)
-
-  if not clientFrom?
-
-    client.transmit {
-      type: NETCODES.MSG_SEND_RES,
-      response: {
-        id: msgObject.id,
-        value: false,
-        reason: "not-connected"
-      }
-    }
-
-  # Prevent uID spoofing
-  msgObject.fromuID = clientFrom.uID
-
-  clientTo = ch.getClientByuID(msgObject.touID)
-  clientTo.transmitMessage(msgObject) if clientTo?
-
-  client.transmit {
-    type: NETCODES.MSG_SEND_RES,
-    response: {
-      id: msgObject.id,
-      value: true
-    }
-  }
-
-  logMessage(msgObject)
 
 logWithTime = (txt) ->
   return "\n[#{Date.now()}] #{txt}"
@@ -174,23 +159,16 @@ logMessage = (msgObject, callback) ->
 
     do(->
       fs.appendFileSync("#{logDir}#{name}", logString)
-      written = true) for name in fileNames when fs.existsSync("#{logDir}#{name}") and not written
+      written = true) for name in fileNames when fs.existsSync("#{logDir}#{name}") unless written
 
     fs.appendFileSync("#{logDir}#{fileNames[0]}", logString) unless written
   )
 
+config = {authKey: "94bfd1921fe7663e776528e678e56f33"}
+cs = new ChatServer(config)
 
-wssConfig = {port: 1337}
-wss = new WebSocketServer(wssConfig)
-ch = new ClientHolder()
+cs.on "message", logMessage
+cs.on "client connect", logUserInfo
+cs.on "client disconnect", logUserInfo
 
-postPasswd = "94bfd1921fe7663e776528e678e56f33"
 logDir = "log/"
-
-wss.on "connection", (ws) ->
-  client = new ChatClient(ws, ch)
-
-  ws.on "close", (code, reason) ->
-    if ch.getClientByWS(ws)
-      logUserInfo("#{ch.getClientByWS(ws).uID} disconnected.")
-      ch.delClientByWS(ws)

@@ -1,5 +1,4 @@
-MS = window.MessageSerializer
-NETCODES = window.NETCODES
+MS = window.Message
 
 class ChatClient
   constructor: (server, @sessid) ->
@@ -11,21 +10,20 @@ class ChatClient
     @callbacks = {
       "cstatus": undefined,
       "message": undefined,
-      "confirmed": undefined
+      "confirmation": undefined
     }
 
-    @ws.onmessage = (message) => @handleIncoming(message)
+    @ws.onmessage = (message) =>
+      @handleIncoming(MS.deserialize(message.data))
     @ws.onopen = =>
       @emit("cstatus", "Connected to IM Server.")
       @sendAuthChallenge()
 
   handleIncoming: (incObject) =>
-    parsedInc = MS.deserialize(incObject.data)
-
-    switch parsedInc.type
-      when NETCODES.AUTH_RES then @authenticate(parsedInc)
-      when NETCODES.MSG_SEND_RES then @emit("confirmed", parsedInc)
-      when NETCODES.MSG then @emit("message", parsedInc.message)
+    switch MS.typeOf(incObject)
+      when MS.CODES.AUTH_RES then @authenticate(incObject)
+      when MS.CODES.MSG_SEND_RES then @emit("confirmation", incObject.response)
+      when MS.CODES.MSG then @emit("message", incObject.message)
 
     undefined
 
@@ -37,57 +35,41 @@ class ChatClient
       return error
 
   transmitMessage: (msgObject) ->
-    error = @transmit {
-      type: NETCODES.MSG_SEND_REQ,
-      message: msgObject
-    }
-
+    error = @transmit MS.createMsgSendReq(msgObject)
     return error if error?
 
-  createMessage: (msgObject) ->
+  createMessageWithID: (msgObject) ->
+    # add ID to message (to confirm its delivery with MSG_SEND_RES)
     msgObject.id = @msgID
     @msgID++
+    return msgObject
 
   emit: (event, arg) ->
-    callback(arg) for evt, callback of @callbacks when evt is event and callback?
+    callback(arg) for evt, callback of @callbacks when evt is event and typeof callback is "function"
 
   on: (event, callback) ->
-    @callbacks[event] = callback
+    do(=>
+      @callbacks[event] = callback
+    ) if typeof event is "string" and typeof callback is "function"
 
   authenticate: (authObject) ->
-    if authObject?.type is not NETCODES.AUTH_RES or not authObject?.response?.value?
-      logConnectionInfo("AUTH_RES INVALID")
+    unless MS.assert(authObject, MS.CODES.AUTH_RES)
+      @emit("cstatus", "AUTH_RES INVALID")
       @authenticated = false
       return false
 
-    if authObject.response.value is true
+    if authObject.response.value
       @uID = authObject.response.uID
-      logConnectionInfo("Client verified.")
+      @emit("cstatus", "Client verified.")
       @authenticated = true
       return true
     else
-      logConnectionInfo("Client denied.")
+      @emit("cstatus", "Client denied.")
       @authenticated = false
       return false
 
   sendAuthChallenge: ->
     @emit("cstatus", "Authorizing...")
-    @transmit {
-      type: NETCODES.AUTH_REQ,
-      SESSID: @sessid
-    }
+    @transmit MS.createAuthReq(@sessid)
 
-logConnectionInfo = (info) ->
-  console.log(info)
-
-chatServer = "ws://arch.jvester.se:1337"
-
-SESSID = window.getCookie("PORTALNSESSID")
-
-cc = new ChatClient(chatServer, SESSID)
-cc.on "cstatus", (status) ->
-  console.log(status)
-cc.on "message", (msgObject) ->
-  console.log(msgObject)
-
-window.cc = cc
+window.ChatClient = ChatClient

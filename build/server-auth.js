@@ -84,8 +84,8 @@
         return ChatServer.prototype.handleClientRequest.apply(_this, arguments);
       };
       config = {
-        key: fs.readFileSync("keys/key.pem"),
-        cert: fs.readFileSync("keys/cert.pem")
+        key: fs.readFileSync("../keys/key.pem"),
+        cert: fs.readFileSync("../keys/cert.pem")
       };
       server = https.createServer(config);
       server.listen(1337);

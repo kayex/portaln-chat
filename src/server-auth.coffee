@@ -1,6 +1,7 @@
 WebSocketServer = require("ws").Server
 fs = require("fs")
 https = require("https")
+http = require("http")
 request = require("request")
 MS = require("./message.js").Message
 
@@ -41,6 +42,7 @@ class ChatServer
       cert: fs.readFileSync("../keys/cert.pem")
     }
     server = https.createServer(config)
+    # server = http.createServer()
     server.listen(1337)
 
     @wss = new WebSocketServer({server: server})

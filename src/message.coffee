@@ -24,7 +24,13 @@ authextres = {
 
 msgsendreq = {
   type: Message.CODES.MSG_SEND_REQ,
-  message: Object
+  message: {
+  timeStamp: number,
+  touID: string,
+  fromuID: string,
+  (content): string,
+  (id): number
+  }
 }
 
 msgsendres = {
@@ -37,7 +43,13 @@ msgsendres = {
 
 msg = {
   type: Message.CODES.MSG,
-  message: Object
+  message: {
+  timeStamp: number,
+  touID: string,
+  fromuID: string,
+  (content): string,
+  (id): number
+  }
 }
 
 userreq = {
